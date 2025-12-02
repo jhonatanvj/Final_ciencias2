@@ -1,5 +1,4 @@
-# src/interactive_simple_from_bplustree.py
-#!/usr/bin/env python3
+
 """
 Versión simple e interactiva que reutiliza el B+ Tree y usa coordenadas (si existen)
 para construir un grafo realista (k-NN). Menú ligero:
