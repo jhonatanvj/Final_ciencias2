@@ -12,6 +12,9 @@ para construir un grafo realista (k-NN). Menú ligero:
  0) Salir
 """
 import os, pickle, heapq, random, csv, sys
+# arriba del archivo principal
+from coloreado import *
+
 from collections import defaultdict, deque
 
 BPTREE_PATH = os.path.join(os.path.dirname(__file__), "..", "outputs", "bplustree_transmilenio.pkl")
@@ -143,6 +146,16 @@ def main_menu():
     stations = extract_stations_from_bpt(tree)
     code_to_station = {s['code']: s for s in stations}
     adj = build_realistic_graph(stations, k_neighbors=4)
+
+    conflict_graph = build_conflict_graph(adj)
+    station_colors = bfs_coloring(conflict_graph)   
+    demanda_hora = {s['code']: max(10, s['cap']) for s in stations} 
+    station_freq = {
+        code: color_to_frequency(code, c, demanda_hora)
+        for code, c in station_colors.items()
+    }
+    buses_per_station = assign_buses_from_frequency(stations, station_freq)
+
     # cargas actuales
     node_loads = {s['code']: 0 for s in stations}
 
@@ -154,6 +167,7 @@ def main_menu():
 5) Buscar ruta mínima entre dos estaciones (y verificar capacidad para X pax)
 6) Mostrar estado de cargas (top 10)
 7) Guardar cargas actuales a CSV
+8) mostrar coloreado estaciones
 0) Salir
 Elige una opción: '''
 
@@ -247,10 +261,22 @@ Elige una opción: '''
                 print(f" {code} : {code_to_station[code]['name']} | load={load} | cap={code_to_station[code]['cap']}")
         elif choice == '7':
             save_loads_csv(stations, node_loads)
+
+        elif choice == '8':
+            print("Asignación de buses (debug):")
+            for code in sorted(buses_per_station.keys())[:100]:
+                s = code_to_station[code]
+                headway = station_freq[code]["headway_min"]
+                demanda = demanda_hora[code]   
+                color = station_colors[code]
+                n_buses = buses_per_station[code]
+                print(f"{code} : {s['name']} | color={color} | demanda={demanda} | headway={headway:.2f} min | buses={n_buses}")
+
         elif choice == '0':
-            print('Adiós.'); break
-        else:
-            print('Opción inválida. Intenta de nuevo.')
+            print('Adios.'); 
+            break
+
+
 
 if __name__ == '__main__':
     main_menu()
