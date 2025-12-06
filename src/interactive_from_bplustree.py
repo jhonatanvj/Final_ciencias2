@@ -14,7 +14,7 @@ para construir un grafo realista (k-NN). Menú ligero:
 import os, pickle, heapq, random, csv, sys
 # arriba del archivo principal
 from coloreado import *
-
+from mst_module  import *
 from collections import defaultdict, deque
 
 BPTREE_PATH = os.path.join(os.path.dirname(__file__), "..", "outputs", "bplustree_transmilenio.pkl")
@@ -159,6 +159,34 @@ def main_menu():
     # cargas actuales
     node_loads = {s['code']: 0 for s in stations}
 
+ def option_mst():
+    print("\n=== GENERANDO ÁRBOL DE RECUBRIMIENTO MÍNIMO (MST) ===")
+
+    # EJEMPLO BÁSICO: tú después cambias las estaciones y pesos reales
+    # ---------------------------------------------------------------
+    # Para que funcione YA MISMO, dejo un set simple de nodos/aristas.
+    # Tú luego reemplazas `stations` y `edges` con tu CSV real.
+    stations = ["A", "B", "C", "D"]
+    station_to_id = {name: i for i, name in enumerate(stations)}
+
+    edges = [
+        (4, station_to_id["A"], station_to_id["B"]),
+        (1, station_to_id["B"], station_to_id["C"]),
+        (3, station_to_id["C"], station_to_id["D"]),
+        (2, station_to_id["A"], station_to_id["D"]),
+    ]
+
+    num_nodes = len(stations)
+
+    mst_edges, cost = kruskal(num_nodes, edges)
+
+    print("\n--- MST (Kruskal) ---")
+    for w, u, v in mst_edges:
+        print(f"{stations[u]} -- {stations[v]} (peso {w})")
+
+    print(f"\nCosto total del MST: {cost}\n")
+
+
     MENU = '''\nMenú - opciones:
 1) Listar estaciones (primeras 100)
 2) Añadir pasajeros manualmente a una estación
@@ -168,6 +196,7 @@ def main_menu():
 6) Mostrar estado de cargas (top 10)
 7) Guardar cargas actuales a CSV
 8) mostrar coloreado estaciones
+9) mostrar MSI (kruskal)
 0) Salir
 Elige una opción: '''
 
@@ -271,7 +300,8 @@ Elige una opción: '''
                 color = station_colors[code]
                 n_buses = buses_per_station[code]
                 print(f"{code} : {s['name']} | color={color} | demanda={demanda} | headway={headway:.2f} min | buses={n_buses}")
-
+        elif choice == '9':
+            option_mst();
         elif choice == '0':
             print('Adios.'); 
             break
